@@ -1,0 +1,29 @@
+name: Compilar Xbox 360
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar herramientas
+        run: sudo apt-get update && sudo apt-get install -y build-essential flex bison gcc-multilib libgmp3-dev libmpfr-dev libmpc-dev texinfo wget file
+      - name: Bajar LibXenon
+        run: |
+          git clone https://github.com/Free60Project/libxenon.git
+          cd libxenon/toolchain
+          ./build-xenon-toolchain toolchain
+          ./build-xenon-toolchain libxenon
+      - name: Compilar tu juego
+        run: |
+          export DEVKITXENON=$HOME/xenon
+          sudo mv /usr/local/xenon $DEVKITXENON
+          export PATH="$DEVKITXENON/bin:$DEVKITXENON/usr/bin:$PATH"
+          rustup toolchain install nightly --profile minimal --component rust-src
+          rustup default nightly
+          cargo build --release --target powerpc-unknown-xenon.json
+          xenon-objcopy -O elf32-powerpc target/powerpc-unknown-xenon/release/ggg target/powerpc-unknown-xenon/release/xenon.elf
+      - uses: actions/upload-artifact@v4
+        with:
+          name: xenon-elf
+          path: target/powerpc-unknown-xenon/release/xenon.elf
+          
