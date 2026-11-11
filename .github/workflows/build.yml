@@ -1,29 +1,54 @@
 name: Compilar Xbox 360
+
 on: [push]
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Preparar herramientas
+
+      - name: Preparar herramientas del sistema
         run: sudo apt-get update && sudo apt-get install -y build-essential flex bison gcc-multilib libgmp3-dev libmpfr-dev libmpc-dev texinfo wget file
-      - name: Bajar LibXenon
+
+      # 1. Intentamos recuperar el toolchain de LibXenon desde la caché
+      - name: Cache LibXenon Toolchain
+        id: cache-xenon
+        uses: actions/cache@v4
+        with:
+          path: /usr/local/xenon
+          key: xenon-toolchain-${{ hashFiles('libxenon/toolchain/build-xenon-toolchain') }}
+          restore-keys: |
+            xenon-toolchain-
+
+      # 2. Solo se ejecuta si la caché falló (la primera vez o si modificaste el script)
+      - name: Bajar y compilar LibXenon
+        if: steps.cache-xenon.outputs.cache-hit != 'true'
         run: |
           git clone https://github.com/Free60Project/libxenon.git
           cd libxenon/toolchain
           ./build-xenon-toolchain toolchain
           ./build-xenon-toolchain libxenon
+
       - name: Compilar tu juego
         run: |
-          # Entramos a la subcarpeta rust donde están tus archivos según el log
           cd rust
           export DEVKITXENON=$HOME/xenon
-          sudo mv /usr/local/xenon $DEVKITXENON
+          # Si la caché ya restauró /usr/local/xenon, lo movemos a HOME
+          if [ -d /usr/local/xenon ]; then
+            sudo cp -r /usr/local/xenon $DEVKITXENON
+            sudo chown -R $USER:$USER $DEVKITXENON
+          fi
+          
           export PATH="$DEVKITXENON/bin:$DEVKITXENON/usr/bin:$PATH"
+          
           rustup toolchain install nightly --profile minimal --component rust-src
           rustup default nightly
-          cargo build --release --target powerpc-unknown-xenon.json
+          
+          RUSTC_BOOTSTRAP=1 cargo build --release --target powerpc-unknown-xenon.json
+          
           xenon-objcopy -O elf32-powerpc target/powerpc-unknown-xenon/release/ggg target/powerpc-unknown-xenon/release/xenon.elf
+
       - uses: actions/upload-artifact@v4
         with:
           name: xenon-elf
