@@ -15,6 +15,8 @@ jobs:
           ./build-xenon-toolchain libxenon
       - name: Compilar tu juego
         run: |
+          # Entramos a la subcarpeta rust donde están tus archivos según el log
+          cd rust
           export DEVKITXENON=$HOME/xenon
           sudo mv /usr/local/xenon $DEVKITXENON
           export PATH="$DEVKITXENON/bin:$DEVKITXENON/usr/bin:$PATH"
@@ -25,5 +27,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: xenon-elf
-          path: target/powerpc-unknown-xenon/release/xenon.elf
-          
+          path: rust/target/powerpc-unknown-xenon/release/xenon.elf
