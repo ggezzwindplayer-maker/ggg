@@ -11,7 +11,6 @@ jobs:
       - name: Preparar herramientas del sistema
         run: sudo apt-get update && sudo apt-get install -y build-essential flex bison gcc-multilib libgmp3-dev libmpfr-dev libmpc-dev texinfo wget file
 
-      # 1. Intentamos recuperar el toolchain de LibXenon desde la caché
       - name: Cache LibXenon Toolchain
         id: cache-xenon
         uses: actions/cache@v4
@@ -21,7 +20,6 @@ jobs:
           restore-keys: |
             xenon-toolchain-
 
-      # 2. Solo se ejecuta si la caché falló (la primera vez o si modificaste el script)
       - name: Bajar y compilar LibXenon
         if: steps.cache-xenon.outputs.cache-hit != 'true'
         run: |
@@ -33,8 +31,9 @@ jobs:
       - name: Compilar tu juego
         run: |
           cd rust
+          
           export DEVKITXENON=$HOME/xenon
-          # Si la caché ya restauró /usr/local/xenon, lo movemos a HOME
+          
           if [ -d /usr/local/xenon ]; then
             sudo cp -r /usr/local/xenon $DEVKITXENON
             sudo chown -R $USER:$USER $DEVKITXENON
@@ -45,7 +44,7 @@ jobs:
           rustup toolchain install nightly --profile minimal --component rust-src
           rustup default nightly
           
-          RUSTC_BOOTSTRAP=1 cargo build --release --target powerpc-unknown-xenon.json
+          cargo +nightly build -Zjson-target-spec --release --target powerpc-unknown-xenon.json
           
           xenon-objcopy -O elf32-powerpc target/powerpc-unknown-xenon/release/ggg target/powerpc-unknown-xenon/release/xenon.elf
 
