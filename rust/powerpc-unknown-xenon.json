@@ -1,0 +1,41 @@
+{
+  "llvm-target": "powerpc-unknown-none-elf",
+  "arch": "powerpc",
+  "target-pointer-width": 32,
+  "target-endian": "big",
+  "data-layout": "E-m:e-p:32:32-Fn32-i64:64-n32",
+  "os": "none",
+  "env": "none",
+  "vendor": "unknown",
+  "abi": "none",
+
+  "cpu": "750",
+  "features": "+altivec",
+  "max-atomic-width": 32,
+
+  "linker": "xenon-gcc",
+  "linker-flavor": "gcc",
+  "linker-is-gnu": true,
+  "no-default-libraries": true,
+
+  "panic-strategy": "abort",
+  "relocation-model": "static",
+  "code-model": "small",
+  "disable-redzone": true,
+  "executables": true,
+  "binary-format": "elf",
+  "crt-static-default": true,
+  "crt-static-respected": true,
+  "position-independent-executables": false,
+  "static-position-independent-executables": false,
+  "eh-frame-header": false,
+  "default-uwtable": false,
+  "crt-static-allows-dylibs": false,
+  "supports-stack-protector": false,
+
+  "metadata": {
+    "description": "Xbox 360 / Xenon (PowerPC 32-bit big-endian, libXenon, no_std)",
+    "host-tools": false,
+    "std": false
+  }
+}

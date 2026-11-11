@@ -1,0 +1,19 @@
+[package]
+name = "xenon-hello"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+# `core` y `compiler_builtins` se recompilan con -Z build-std (ver .cargo/config.toml).
+# No hay dependencias: todo lo demás lo aporta libXenon/newlib.
+[dependencies]
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+opt-level = 2
+lto = true
+codegen-units = 1
+strip = "none"

@@ -1,0 +1,6 @@
+[toolchain]
+# build-std necesita nightly + rust-src. Para builds reproducibles, fija una
+# fecha concreta (p. ej. "nightly-2026-11-01") en lugar de "nightly".
+channel = "nightly"
+components = ["rust-src"]
+profile = "minimal"
